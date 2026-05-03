@@ -6,6 +6,9 @@
 *~
 
 # Server
+.ftpaccess
+.htaccess
+.htdigest
 php.ini
 
 # Data

@@ -110,3 +110,9 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 - Files are deployed directly via FTP to the hosting account
 - `.htaccess` has hotlink prevention rules tied to antonizick.com
 - `data/.htaccess` blocks direct web access to `users.json`
+
+## Screenshots
+
+![](screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png)
+![](screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png)
+![](screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png)
