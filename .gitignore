@@ -1,0 +1,19 @@
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Server
+php.ini
+
+# Data
+data/users.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Hidden/backup files
+*.hide

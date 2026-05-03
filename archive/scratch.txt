@@ -1,0 +1,343 @@
+
+------------------------
+To Do Next
+-------------------------------------------------
+
+
+
+------------------------
+Next Build Spin
+-------------------------------------------------
+MFA Authentacation - Auth0
+MFA Authentacation - PassKey
+Encrypt data in PHP MySQL
+
+
+------------------------
+Next Build Spin
+-------------------------------------------------
+Env Standup 
+    Set Subdomain
+        Account and Password
+        Files
+    Deploy DB
+        Account & Password
+        Build Schema
+    Modify Files
+        dbcon.PHP
+            $host = '127.0.0.1:3308';
+            $user = '*****************';
+            $password = '*****************';  
+            $database = '*****************';    
+        index.PHP
+            $pageTitle
+            Columns <tr><th>
+            Search Fields <tr><th>
+
+            (`pk﻿index`, `priority2day`, `description`, `urgency`, `status`, `elenav`, `project`, `narritive`, `contact`, `cryo date`, `deadline1`, `deadline2`, `deadlineh`, `notes`, `links`, `subject`, `tags`, `other`, `dwe`, `sort overide`)
+
+
+
+        data-fetcher.PHP
+            $sql = "
+        recordadd.PHP
+        nxaction.php
+
+
+
+
+------------------------
+Done
+-------------------------------------------------
+Create database
+Instantiate remote access
+Build UI and connect to back end database
+Build pagination functions
+Build export functions
+Build search FeatureBuilt export functions
+Create fade in overlays for C,U,D functions
+Create record
+Create Record with some empty fields
+Edit Record
+Delete Record
+Deal with Checkboxes
+on mouseover update hidden input field to unique record key
+Have an auto incrementing ID in MySQL
+Hashing with Salt
+Handle records with encrypted-unique keys to prevent incremental record walking
+Authentacation - Password
+Create the 0-10 Color Codes Tables
+Colorize P1 and P2 Columns
+Colorize Elena Column Res or no-color
+Import CSV Files to MySQL
+A, U, D Operations on Lists
+Add green color codes to lists in2 in3
+Explore the ideal of custom Data Field Names in Lists
+    Extend DataX to 4? 5?
+Txt Insert bug on List dat3 and dat4 fields
+C, E Task operations to handle categories instead of theinteger (primary key)
+
+
+
+
+---------------------------
+Encryption Feature	PHP	
+-------------------------------------------------
+One-way hashing	    password_hash()	
+Two-way encryption	openssl_encrypt()
+Key Management	    Manual (store securely)
+Use Case	        Web app logic	
+Security Level	    High (with good key handling)
+
+
+----------------------------
+Encryption Feature	MySQL
+-------------------------------------------------
+One-way hashing	    ❌ Not built-in
+Two-way encryption	AES_ENCRYPT()
+Key Management	    Hard-coded or passed
+Use Case            DB-level data security
+Security Level	    Medium (watch for key exposure)
+
+
+-------------------------------------------------
+
+
+
+
+pk﻿index
+priority2day
+description
+urgency
+status
+elenav
+project
+narritive
+cryo date
+deadline1
+links
+
+
+
+UPDATE datatasks
+SET 
+  `pk﻿index` = COALESCE(`pk﻿index`, 999),
+  `priority2day` = COALESCE(`priority2day`, 999),
+  `urgency` = COALESCE(`urgency`, 999),
+  `status` = COALESCE(`status`, 999),
+  `elenav` = COALESCE(`elenav`, 0),
+  `deadline1` = COALESCE(`deadline1`, 999),
+  `deadline2` = COALESCE(`deadline2`, 999),
+  `deadlineh` = COALESCE(`deadlineh`, 999),
+  `dwe` = COALESCE(`dwe`, 999),
+  `sort overide` = COALESCE(`sort overide`, 999);
+
+
+  SELECT * FROM `datastatus`
+  (`pkindx`, `status`, `color`) 
+
+
+
+  <div class="form-container">
+    <form action="nxaction.php" method="post">
+        <div class="modal fade" id="editrecord" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="exampleModalLabel">Edit Record</h1>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-x">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;max-width:100%;">
+                        <label>Surname:</label><input type="text" name="Surname" value="<?= htmlspecialchars($record['Surname'] ?? '') ?>">
+                            <label>CreditScore:</label><input type="number" name="CreditScore" value="<?= htmlspecialchars($record['CreditScore'] ?? '') ?>">
+                            <label>Geography:</label><input type="text" name="Geography" value="<?= htmlspecialchars($record['Geography'] ?? '') ?>">
+                            <label>Gender:</label><input type="text" name="Gender" value="<?= htmlspecialchars($record['Gender'] ?? '') ?>">
+                            <label>Age:</label><input type="number" name="Age" value="<?= htmlspecialchars($record['Age'] ?? '') ?>">
+                            <label>Tenure:</label><input type="number" name="Tenure" value="<?= htmlspecialchars($record['Tenure'] ?? '') ?>">
+                            <label>Balance:</label><input type="number" name="Balance" step="0.01" value="<?= htmlspecialchars($record['Balance'] ?? '') ?>">
+                            <label>NumOfProducts:</label><input type="number" name="NumOfProducts" value="<?= htmlspecialchars($record['NumOfProducts'] ?? '') ?>">
+                            <label>HasCrCard:</label>
+                            <div style="display:flex;align-items:center;">
+                                <input type="checkbox" name="HasCrCard" style="margin:0;" <?= ($record['HasCrCard'] ?? 0) ? "checked" : "" ?>>
+                            </div>
+                            <label>IsActiveMember:</label>
+                            <div style="display:flex;align-items:center;">
+                                <input type="checkbox" name="IsActiveMember" style="margin:0;" <?= ($record['IsActiveMember'] ?? 0) ? "checked" : "" ?>>
+                            </div>
+                            <label>EstimatedSalary:</label><input type="number" name="EstimatedSalary" step="0.01" value="<?= htmlspecialchars($record['EstimatedSalary'] ?? '') ?>">
+                            <input type="hidden" id="valpass" name="valpass"  value="<?php echo $valuePass; ?>"><input type="hidden" id="vact" name="vact" value="receditact">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close-footer">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+SELECT * FROM `viewTasks` WHERE priority2day != 88888 ORDER BY `pkind` ASC
+
+
+    // Sanitize and fetch form values
+    $publicId = $_POST['valpass'];
+    $Surname = $_POST['Surname'];
+    $CreditScore = $_POST['CreditScore'];
+    $Geography = $_POST['Geography'];
+    $Gender = $_POST['Gender'];
+    $Age = $_POST['Age'];
+    $Tenure = $_POST['Tenure'];
+    $Balance = $_POST['Balance'];
+    $NumOfProducts = $_POST['NumOfProducts'];
+    $HasCrCard = isset($_POST['HasCrCard']) ? 1 : 0;
+    $IsActiveMember = isset($_POST['IsActiveMember']) ? 1 : 0;
+    $EstimatedSalary = $_POST['EstimatedSalary'];
+
+    // Prepare and execute update query
+    $stmt = $conn->prepare("UPDATE data SET Surname = ?, CreditScore = ?, Geography = ?, Gender = ?, Age = ?, Tenure = ?, Balance = ?, NumOfProducts = ?, HasCrCard = ?, IsActiveMember = ?, EstimatedSalary = ? WHERE publicId = ?");
+    $stmt->bind_param("sissiidiiids", $Surname, $CreditScore, $Geography, $Gender, $Age, $Tenure, $Balance, $NumOfProducts, $HasCrCard, $IsActiveMember, $EstimatedSalary, $publicId);
+
+    if ($stmt->execute()) {
+        echo "<div class='form-container'><h2>Record Updated</h2></div>";
+        echo "<script>setTimeout(() => { window.location.href = 'index.php'; }, 2000);</script>";
+    } else {
+        echo "<div class='form-container'><h2>Update Failed</h2><p>Error: " . $stmt->error . "</p></div>";
+    }
+
+    $stmt->close();
+} else {
+    echo "<div class='form-container'><h2>Error</h2><p>No CustomerId provided.</p></div>";
+}
+
+
+<?php   // ----------------------------------    Push Edit action on Record
+if ($valueAction == "receditact") {
+
+if (!empty($_POST['valpass'])) {
+    // Sanitize and fetch form values
+    $publicId = $_POST['valpass'];
+    $Surname = $_POST['Surname'];
+    $CreditScore = $_POST['CreditScore'];
+    $Geography = $_POST['Geography'];
+    $Gender = $_POST['Gender'];
+    $Age = $_POST['Age'];
+    $Tenure = $_POST['Tenure'];
+    $Balance = $_POST['Balance'];
+    $NumOfProducts = $_POST['NumOfProducts'];
+    $HasCrCard = isset($_POST['HasCrCard']) ? 1 : 0;
+    $IsActiveMember = isset($_POST['IsActiveMember']) ? 1 : 0;
+    $EstimatedSalary = $_POST['EstimatedSalary'];
+
+    // Prepare and execute update query
+    $stmt = $conn->prepare("UPDATE data SET Surname = ?, CreditScore = ?, Geography = ?, Gender = ?, Age = ?, Tenure = ?, Balance = ?, NumOfProducts = ?, HasCrCard = ?, IsActiveMember = ?, EstimatedSalary = ? WHERE publicId = ?");
+    $stmt->bind_param("sissiidiiids", $Surname, $CreditScore, $Geography, $Gender, $Age, $Tenure, $Balance, $NumOfProducts, $HasCrCard, $IsActiveMember, $EstimatedSalary, $publicId);
+
+    if ($stmt->execute()) {
+        echo "<div class='form-container'><h2>Record Updated</h2></div>";
+        echo "<script>setTimeout(() => { window.location.href = 'index.php'; }, 2000);</script>";
+    } else {
+        echo "<div class='form-container'><h2>Update Failed</h2><p>Error: " . $stmt->error . "</p></div>";
+    }
+
+    $stmt->close();
+} else {
+    echo "<div class='form-container'><h2>Error</h2><p>No CustomerId provided.</p></div>";
+}
+
+
+
+
+// ----------------------------------------------------------------------
+}
+?>
+
+select `t`.`pkind` AS `pkind`,`t`.`priority2day` AS `priority2day`,`t`.`description` AS `description`,`t`.`urgency` AS `urgency`,`t`.`status` AS `status`,`t`.`elenav` AS `elenav`,`t`.`project` AS `project`,`t`.`narritive` AS `narritive`,`t`.`contact` AS `contact`,`t`.`cryo date` AS `cryo date`,`t`.`deadline1` AS `deadline1`,`t`.`deadline2` AS `deadline2`,`t`.`deadlineh` AS `deadlineh`,`t`.`notes` AS `notes`,`t`.`links` AS `links`,`t`.`subject` AS `subject`,`t`.`tags` AS `tags`,`t`.`other` AS `other`,`t`.`dwe` AS `dwe`,`t`.`sort overide` AS `sort overide`,`s`.`status` AS `status_text`,`s`.`color` AS `status_color`,`s`.`fcolor` AS `status_font_color` from (`antonizi_nxtask`.`datatasks` `t` left join `antonizi_nxtask`.`datastatus` `s` on((`t`.`status` = `s`.`pkindx`))) where (`t`.`priority2day` <> 88888)
+
+select `t`.`pkind` AS `pkind`,`t`.`priority2day` AS `priority2day`,`t`.`description` AS `description`,`t`.`urgency` AS `urgency`,`t`.`status` AS `status`,`t`.`elenav` AS `elenav`,`t`.`project` AS `project`,`t`.`narritive` AS `narritive`,`t`.`contact` AS `contact`,`t`.`cryo date` AS `cryo date`,`t`.`deadline1` AS `deadline1`,`t`.`deadline2` AS `deadline2`,`t`.`deadlineh` AS `deadlineh`,`t`.`notes` AS `notes`,`t`.`links` AS `links`,`t`.`subject` AS `subject`,`t`.`tags` AS `tags`,`t`.`other` AS `other`,`t`.`dwe` AS `dwe`,`t`.`sort overide` AS `sort overide`,`s`.`status` AS `status_text`,`s`.`color` AS `status_color`,`s`.`fcolor` AS `status_font_color`,`p`.`colorcode` AS `cc1` from ((`antonizi_nxtask`.`datatasks` `t` left join `antonizi_nxtask`.`datastatus` `s` on((`t`.`status` = `s`.`pkindx`))) left join `antonizi_nxtask`.`dataColorPalette` `p` on((`t`.`priority2day` = `p`.`number`))) where (`t`.`priority2day` <> 88888)
+
+{ data: "urgency", render: renderWithWhite999 },
+
+{ data: "links" },
+
+select `t`.`pkind` AS `pkind`,`t`.`priority2day` AS `priority2day`,`t`.`description` AS `description`,`t`.`urgency` AS `urgency`,`t`.`status` AS `status`,`t`.`elenav` AS `elenav`,`t`.`project` AS `project`,`t`.`narritive` AS `narritive`,`t`.`contact` AS `contact`,`t`.`cryo date` AS `cryo date`,`t`.`deadline1` AS `deadline1`,`t`.`deadline2` AS `deadline2`,`t`.`deadlineh` AS `deadlineh`,`t`.`notes` AS `notes`,`t`.`links` AS `links`,`t`.`subject` AS `subject`,`t`.`tags` AS `tags`,`t`.`other` AS `other`,`t`.`dwe` AS `dwe`,`t`.`sort overide` AS `sort overide`,`s`.`status` AS `status_text`,`s`.`color` AS `status_color`,`s`.`fcolor` AS `status_font_color`,`p1`.`colorcode` AS `cc1`,`p2`.`colorcode` AS `cc2` from (((`antonizi_nxtask`.`datatasks` `t` left join `antonizi_nxtask`.`datastatus` `s` on((`t`.`status` = `s`.`pkindx`))) left join `antonizi_nxtask`.`dataColorPalette` `p1` on((`t`.`priority2day` = `p1`.`number`))) left join `antonizi_nxtask`.`dataColorPalette` `p2` on((`t`.`urgency` = `p2`.`number`))) where ((`t`.`priority2day` <> 88888) and ((`t`.`dwe` is null) or (not((`t`.`dwe` like '%personal%')))))
+
+<tr>
+  <th>indx</th>
+  <th>Name</th>
+  <th>Category</th>
+  <th>SO</th>
+  <th>Description</th>
+  <th>contact</th>
+  <th>Link</th>
+  <th>tier</th>
+  <th>lclass</th>
+</tr>
+<tr>
+  <th><input type="text" placeholder="Search ID" /></th>
+  <th><input type="text" placeholder="Search Name" /></th>
+  <th><input type="text" placeholder="Search Category" /></th>
+  <th><input type="text" placeholder="Search SO" /></th>
+  <th><input type="text" placeholder="Search Description" /></th>
+  <th><input type="text" placeholder="Search Contact" /></th>
+  <th><input type="text" placeholder="Search Link" /></th>
+  <th><input type="text" placeholder="Search Tier" /></th>
+  <th><input type="text" placeholder="Search Class" /></th>
+</tr>
+
+INSERT INTO `dataNxlinks`(`indx`, `Name`, `Category`, `SO`, `Description`, `contact`, `Link`, `date_created`, `last_updated`, `tier`, `lclass`) VALUES ('[value-1]','[value-2]','[value-3]','[value-4]','[value-5]','[value-6]','[value-7]','[value-8]','[value-9]','[value-10]','[value-11]')
+
+
+
+
+$(document).ready(function () {
+    const table = $('#myTable').DataTable({
+        ajax: "ldata-fetcher.php",
+        columns: [
+            { data: "indx" },
+            { data: "Name" },
+            { data: "Category" },
+            { data: "SO" },
+            { data: "Description" },
+            { data: "contact" },
+            { data: "Link" },
+            { data: "tier" },
+            { data: "lclass" },
+            {
+                data: null,
+                render: function (data, type, row, meta) {
+                    return `
+                        <div class="action-buttons">
+                            <button type="button" class="icon-button" 
+                                onmouseover="document.getElementById('valpass').value = '${row.indx}'; document.getElementById('vact').value = 'recedit';" onclick="document.forms['actionForm'].submit();">
+                                <img src="img/edit.png" alt="Edit">
+                            </button>
+                            <button type="button" class="icon-button" 
+                                onmouseover="document.getElementById('valpass').value = '${row.indx}'; document.getElementById('vact').value = 'recdel';" onclick="document.forms['actionForm'].submit();">
+                                <img src="img/del.png" alt="Edit">
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        ],
+
+
+
+$sql = "SELECT * FROM viewListData";
+
+
+I'm uploading two files.  The (Old Modal Code Snippet with wrong fields correct functionality.txt) and a file called  (Modal Code Snippet with correct fields.txt) 
+
+The (Old Modal Code Snippet with wrong fields correct functionality.txt) Needs to be rewritten so that it does exactly the same thing it's doing right now but does it with the proper fields and accepts the proper data from the user.
+
+The file called  (Modal Code Snippet with correct fields.txt)  Is an example of a form that is working with the correct fields that we need the (Old Modal Code Snippet with wrong fields correct functionality.txt) To be using.
+
+
+select `t`.`pkind` AS `pkind`,`t`.`priority2day` AS `priority2day`,`t`.`description` AS `description`,`t`.`urgency` AS `urgency`,`t`.`status` AS `status`,`t`.`elenav` AS `elenav`,`t`.`project` AS `project`,`t`.`narritive` AS `narritive`,`t`.`contact` AS `contact`,`t`.`cryo date` AS `cryo date`,`t`.`deadline1` AS `deadline1`,`t`.`deadline2` AS `deadline2`,`t`.`deadlineh` AS `deadlineh`,`t`.`notes` AS `notes`,`t`.`links` AS `links`,`t`.`subject` AS `subject`,`t`.`tags` AS `tags`,`t`.`other` AS `other`,`t`.`dwe` AS `dwe`,`t`.`sort overide` AS `sort overide`,`s`.`status` AS `status_text`,`s`.`color` AS `status_color`,`s`.`fcolor` AS `status_font_color`,`p1`.`colorcode` AS `cc1`,`p2`.`colorcode` AS `cc2` from (((`antonizi_nxtask`.`datatasks` `t` left join `antonizi_nxtask`.`datastatus` `s` on((`t`.`status` = `s`.`pkindx`))) left join `antonizi_nxtask`.`dataColorPalette` `p1` on((`t`.`priority2day` = `p1`.`number`))) left join `antonizi_nxtask`.`dataColorPalette` `p2` on((`t`.`urgency` = `p2`.`number`))) where ((`t`.`priority2day` <> 88888) and ((`t`.`dwe` is null) or (not((`t`.`dwe` like '%personal%')))))
