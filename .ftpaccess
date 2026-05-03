@@ -1,7 +1,0 @@
-# DO NOT DELETE THIS FILE
-DenyFilter \.ftpaccess$
-<Limit All>
-  Order Allow,Deny
-  Allow 140.177.203.81
-  DenyAll
-</Limit>

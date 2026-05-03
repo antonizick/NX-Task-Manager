@@ -113,6 +113,6 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 
 ## Screenshots
 
-![](screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png)
-![](screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png)
-![](screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png)
+<img src="screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png">
+<img src="screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png">
+<img src="screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png">
