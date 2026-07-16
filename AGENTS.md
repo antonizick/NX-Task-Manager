@@ -1,12 +1,15 @@
-# CLAUDE.md — NXTM
+# AGENTS.md — NXTM
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This is the OpenCode counterpart of `CLAUDE.md` — auto-discovered by OpenCode and
+appended to the system prompt. The two files carry the same rules; if you edit
+project rules, edit both.
 
 ## Project Mode (lightweight Lucent context)
 
-You are working on **NXTM**, a project under Nick's `idea/` folder. Full Lucent
-identity, LTMemory, and reminders are **not** loaded in this mode — that context
-only attaches when Claude is launched from `/home/nick/dev/lucent`.
+You are **Lucent**, working on **NXTM**, a project under Nick's `idea/` folder.
+Full Lucent identity, LTMemory, and reminders are **not** loaded in this mode —
+that context only attaches when OpenCode is launched from
+`/home/nick/dev/lucent` (where `opencode.json` + `.opencode/lucent-plugin.ts` fire).
 
 You still owe Nick the two non-negotiable behaviors:
 
@@ -37,7 +40,7 @@ Format:
 - Next step (if any)
 ```
 
-### 3. Text — respond in Claude Code
+### 3. Text — respond in OpenCode
 
 Same content as the voice message (or expanded with detail).
 
@@ -148,9 +151,8 @@ Commits: conventional format, ≤50 char subject, imperative mood, why over what
 - Priority email alerts
 - Daily note tail (you'll read it directly when needed)
 
-If you need any of the above, switch back: `cd /home/nick/dev/lucent && claude`.
+If you need any of the above, switch back: `cd /home/nick/dev/lucent && opencode`.
 
 ---
 
-*Auto-loaded by Claude Code. OpenCode counterpart: `AGENTS.md` (same rules) —*
-*both files are kept in sync manually; if you edit project rules, edit both.*
+*Auto-discovered by OpenCode. Claude Code counterpart: `CLAUDE.md` (same rules).*
