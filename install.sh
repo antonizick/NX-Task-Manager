@@ -16,6 +16,7 @@ RESET_DB=0
 ASSUME_YES=0
 DB_PASSWORD=""
 PORT=""
+FIX_PERMS=0
 CANDIDATE_PORTS=(80 8080 8081 8000 8888 3000)
 
 for arg in "$@"; do
@@ -25,20 +26,32 @@ for arg in "$@"; do
     --password=*) DB_PASSWORD="${arg#*=}" ;;
     --app-dir=*) APP_DIR="${arg#*=}" ;;
     --port=*) PORT="${arg#*=}" ;;
+    --fix-perms) FIX_PERMS=1 ;;
     -h|--help)
       cat <<EOF
-Usage: $0 [--reset-db] [--yes] [--password=SECRET] [--app-dir=/path] [--port=NNNN]
+Usage: $0 [--reset-db] [--yes] [--password=SECRET] [--app-dir=/path] [--port=NNNN] [--fix-perms]
 
   --reset-db        Drop and re-import the database schema/seed (destructive)
   --yes             Assume "yes" for confirmation prompts
   --password=SECRET Use this DB password instead of auto-generating one
   --app-dir=DIR     Install location (default: /var/www/nxtm)
   --port=NNNN       Serve on this port instead of being asked/recommended one
+  --fix-perms       Just re-apply data/ ownership (www-data) and exit — run
+                     this after \`git pull\` if a pull added files under
+                     data/ (e.g. new backups) that the web server can't
+                     write to yet
 EOF
       exit 0
       ;;
   esac
 done
+
+if [ "$FIX_PERMS" = 1 ]; then
+  echo "Re-applying data/ ownership (www-data) in $APP_DIR..."
+  sudo chown -R www-data:www-data "$APP_DIR/data"
+  echo "Done."
+  exit 0
+fi
 
 # ---------- output helpers ----------
 if [ -t 1 ]; then

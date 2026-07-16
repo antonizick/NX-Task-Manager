@@ -300,6 +300,7 @@ Flags:
 - `--yes` — auto-confirm prompts
 - `--app-dir=DIR` — install somewhere other than `/var/www/nxtm`
 - `--port=NNNN` — serve on this port instead of being asked/recommended one
+- `--fix-perms` — just re-apply `data/` ownership to `www-data` and exit; see **Updating NXTM** below
 
 When it finishes, skip to **Step 8: Create your account (first run)** below — the rest is manual/reference documentation for what the script just did, useful if a step needs troubleshooting.
 
@@ -441,10 +442,15 @@ Once it's installed, pulling in new changes is just a `git pull` from the instal
 
 ```bash
 cd /var/www/nxtm
-sudo git pull
+git pull
+sudo chown -R www-data:www-data data
 ```
 
-(Use whatever directory you installed to if it wasn't the default — `--app-dir` if you used `install.sh`.)
+(Use whatever directory you installed to if it wasn't the default. If you used `install.sh`, the second line is also just `bash install.sh --app-dir=DIR --fix-perms`.)
+
+Don't `sudo git pull` — `install.sh` sets up `/var/www/nxtm` owned by *you*, not root, specifically so plain `git pull` works. Running it as root instead creates any newly-pulled files as root, which the `chown` on the next line is there to undo; skipping straight to `sudo git pull` just re-breaks what it fixed.
+
+The `chown` matters because a pull can add new files under `data/` (like a new backup-storage directory), and those land owned by whoever ran the pull — not `www-data`, the user Apache runs as — so the app can't write to them until you reassert ownership. It's a harmless no-op otherwise, so just run it after every pull rather than only when something breaks.
 
 `dbcon.php` (your real DB credentials) isn't tracked with real values in the repo, so a pull never touches it or your data. If a change ever does include a schema update, that'll be called out explicitly with its own re-import step — a plain code update never needs one. Just refresh the page in your browser afterward.
 
@@ -453,6 +459,7 @@ sudo git pull
 - **Blank page / 500 error**: check `sudo tail -f /var/log/apache2/error.log` while reloading — almost always a missing PHP extension (`php-mysqli`) or a `dbcon.php` credential typo.
 - **DataTables show "Ajax error" or won't load rows**: usually the `php.ini` error-reporting mismatch from Step 5 — a warning is leaking into the JSON response. Check the raw response of e.g. `data-fetcher.php` in the browser's Network tab.
 - **`data/users.json` won't save / setup.php loops back to itself**: `data/` isn't writable by `www-data` — redo Step 6.
+- **Creating a backup shows "Backup failed" (or, before that check existed, silently did nothing)**: same cause as above — `data/backups/` isn't writable by `www-data`, usually because a `sudo git pull` created it as root. Run `sudo chown -R www-data:www-data data` (see **Updating NXTM**) and retry.
 - **"Access denied for user"**: re-check the `GRANT` in Step 3 and the credentials in `dbcon.php` match exactly. If you created the account as `'nxtm'@'localhost'` instead of `'nxtm'@'127.0.0.1'`, that's the whole problem — see the note in Step 3; `localhost` accounts never work over the TCP connection these instructions use.
 - **Port 3308 confusion**: that port is only used by the *production* tunnel in `dbcon.php`'s original placeholder comment. Locally you're talking to MySQL directly on its default port (3306), not through a tunnel.
 - **Apache won't start / "Address already in use"**: something else already has that port. `sudo ss -ltn` shows what's listening where. If you're on a custom port, make sure the stock `Listen 80` line was actually removed from `/etc/apache2/ports.conf` (see Step 7) — leaving it in place makes Apache fail to start *at all* whenever port 80 is taken, even if your vhost itself uses a different port.
