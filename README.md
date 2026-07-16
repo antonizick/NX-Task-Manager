@@ -422,6 +422,19 @@ With no `data/users.json` yet, you'll land on `setup.php` automatically:
    - **Skip — use password only** — creates the account with no second factor. Login is then just username + password, no authenticator app needed. You can't add 2FA to that account later without editing `data/users.json` by hand.
 3. You're redirected to `login.php` — log in with your new credentials, and you're in.
 
+## Updating NXTM
+
+Once it's installed, pulling in new changes is just a `git pull` from the install directory — there's no build step and (with a stock Ubuntu PHP install) no bytecode cache to clear:
+
+```bash
+cd /var/www/nxtm
+sudo git pull
+```
+
+(Use whatever directory you installed to if it wasn't the default — `--app-dir` if you used `install.sh`.)
+
+`dbcon.php` (your real DB credentials) isn't tracked with real values in the repo, so a pull never touches it or your data. If a change ever does include a schema update, that'll be called out explicitly with its own re-import step — a plain code update never needs one. Just refresh the page in your browser afterward.
+
 ## Troubleshooting
 
 - **Blank page / 500 error**: check `sudo tail -f /var/log/apache2/error.log` while reloading — almost always a missing PHP extension (`php-mysqli`) or a `dbcon.php` credential typo.
