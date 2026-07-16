@@ -7,6 +7,12 @@ function resolvNulls(&$var) {
     }
 }
 
+function resolvDateNulls(&$var) {
+    if (strlen(trim($var)) == 0) {
+        $var = null;
+    }
+}
+
 if (isset($_POST['AddRecord'])) {
 
     $priority2day = $_POST['priority2day'];
@@ -25,8 +31,8 @@ if (isset($_POST['AddRecord'])) {
     resolvNulls($urgency);
     resolvNulls($status);
     resolvNulls($elenav);
-    resolvNulls($cryodate);
-    resolvNulls($deadline1);
+    resolvDateNulls($cryodate);
+    resolvDateNulls($deadline1);
 
     require_once 'dbcon.php';
 

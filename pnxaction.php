@@ -282,6 +282,9 @@ if ($valueAction == "receditact") {
         $deadline1 = $_POST['deadline1'];
         $links = $_POST['links'];
 
+        if (strlen(trim($cryodate)) == 0) { $cryodate = null; }
+        if (strlen(trim($deadline1)) == 0) { $deadline1 = null; }
+
         // Prepare and execute update query
         $stmt = $conn->prepare("
             UPDATE datatasks 
