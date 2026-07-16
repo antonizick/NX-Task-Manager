@@ -252,11 +252,14 @@ bash install.sh
 
 It's safe to re-run — every step checks current state first and skips what's already done (existing database, existing `dbcon.php`, etc.), so if it stops partway through (or you chose "skip" on a step), just run it again.
 
+Before touching Apache, it checks a handful of common ports (80, 8080, 8081, 8000, 8888, 3000) and tells you which are already taken on your machine. If port 80 is free it's used by default; otherwise you're shown the free ones and asked to pick (or the first free one is picked automatically with `--yes`). Reruns reuse whatever port you picked the first time instead of asking again.
+
 Flags:
 - `--reset-db` — drop and re-import the schema/seed (destructive, asks to confirm)
 - `--password=SECRET` — use this DB password instead of auto-generating one
 - `--yes` — auto-confirm prompts
 - `--app-dir=DIR` — install somewhere other than `/var/www/nxtm`
+- `--port=NNNN` — serve on this port instead of being asked/recommended one
 
 When it finishes, skip to **Step 8: Create your account (first run)** below — the rest is manual/reference documentation for what the script just did, useful if a step needs troubleshooting.
 
@@ -363,11 +366,23 @@ Point Apache's default site at the repo instead of the standard `/var/www/html`:
 
 ```bash
 sudo sed -i "s#DocumentRoot .*#DocumentRoot /var/www/nxtm#" /etc/apache2/sites-available/000-default.conf
+```
+
+Ubuntu's default Apache config sets `AllowOverride None` for `/var/www/`, which silently disables `.htaccess` — including `data/.htaccess`, whose whole job is blocking direct access to `data/users.json` (your password hashes). Without this next step, that file is served as plain text to anyone who requests it:
+
+```bash
+sudo tee -a /etc/apache2/sites-available/000-default.conf > /dev/null <<'EOF'
+<Directory /var/www/nxtm>
+    AllowOverride All
+</Directory>
+EOF
 sudo a2enmod rewrite
 sudo service apache2 restart
 ```
 
 Visit **http://localhost/** from your Windows browser — WSL2 forwards `localhost` automatically, no extra networking setup needed.
+
+**Using a different port?** If port 80 is already taken by something else on your machine, pick another (e.g. `8080`): change the `<VirtualHost *:80>` line in `000-default.conf` to `<VirtualHost *:8080>`, add `Listen 8080` to `/etc/apache2/ports.conf` (and remove the stock `Listen 80` line there — leaving it in place makes Apache fail to start at all if something else holds port 80, not just fail to use it), then restart Apache and visit `http://localhost:8080/`. `install.sh` (see Quick Install above) does all of this automatically and will recommend a free port for you.
 
 ## Step 8: Create your account (first run)
 
@@ -387,3 +402,4 @@ With no `data/users.json` yet, you'll land on `setup.php` automatically:
 - **`data/users.json` won't save / setup.php loops back to itself**: `data/` isn't writable by `www-data` — redo Step 6.
 - **"Access denied for user"**: re-check the `GRANT` in Step 3 and the credentials in `dbcon.php` match exactly. If you created the account as `'nxtm'@'localhost'` instead of `'nxtm'@'127.0.0.1'`, that's the whole problem — see the note in Step 3; `localhost` accounts never work over the TCP connection these instructions use.
 - **Port 3308 confusion**: that port is only used by the *production* tunnel in `dbcon.php`'s original placeholder comment. Locally you're talking to MySQL directly on its default port (3306), not through a tunnel.
+- **Apache won't start / "Address already in use"**: something else already has that port. `sudo ss -ltn` shows what's listening where. If you're on a custom port, make sure the stock `Listen 80` line was actually removed from `/etc/apache2/ports.conf` (see Step 7) — leaving it in place makes Apache fail to start *at all* whenever port 80 is taken, even if your vhost itself uses a different port.

@@ -15,6 +15,8 @@ LOG_FILE="/tmp/nxtm-install-$(date +%Y%m%d-%H%M%S).log"
 RESET_DB=0
 ASSUME_YES=0
 DB_PASSWORD=""
+PORT=""
+CANDIDATE_PORTS=(80 8080 8081 8000 8888 3000)
 
 for arg in "$@"; do
   case "$arg" in
@@ -22,14 +24,16 @@ for arg in "$@"; do
     --yes|-y) ASSUME_YES=1 ;;
     --password=*) DB_PASSWORD="${arg#*=}" ;;
     --app-dir=*) APP_DIR="${arg#*=}" ;;
+    --port=*) PORT="${arg#*=}" ;;
     -h|--help)
       cat <<EOF
-Usage: $0 [--reset-db] [--yes] [--password=SECRET] [--app-dir=/path]
+Usage: $0 [--reset-db] [--yes] [--password=SECRET] [--app-dir=/path] [--port=NNNN]
 
   --reset-db        Drop and re-import the database schema/seed (destructive)
   --yes             Assume "yes" for confirmation prompts
   --password=SECRET Use this DB password instead of auto-generating one
   --app-dir=DIR     Install location (default: /var/www/nxtm)
+  --port=NNNN       Serve on this port instead of being asked/recommended one
 EOF
       exit 0
       ;;
@@ -56,6 +60,15 @@ confirm() {
   [ "$ASSUME_YES" = 1 ] && return 0
   read -rp "  $1 [Y/n] " reply
   [ -z "$reply" ] || [[ "$reply" =~ ^[Yy] ]]
+}
+
+port_in_use() {
+  local p="$1"
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE ":${p}\$"
+  else
+    (: < "/dev/tcp/127.0.0.1/$p") 2>/dev/null
+  fi
 }
 
 # Runs a command, logs full output, shows a friendly result. On failure,
@@ -117,6 +130,16 @@ ok "sudo access confirmed"
 if grep -qi microsoft /proc/version 2>/dev/null; then
   info "Detected WSL — services don't start on boot here, so this script starts them explicitly."
 fi
+
+# Baseline port scan, before anything (Apache, MySQL) gets started — checking
+# later would just see our own not-yet-configured Apache sitting on :80 and
+# wrongly report it as "taken".
+FREE_PORTS=()
+BUSY_PORTS=()
+for p in "${CANDIDATE_PORTS[@]}"; do
+  if port_in_use "$p"; then BUSY_PORTS+=("$p"); else FREE_PORTS+=("$p"); fi
+done
+[ ${#BUSY_PORTS[@]} -gt 0 ] && info "Already in use on this machine: ${BUSY_PORTS[*]}"
 
 # ---------- Step 2: packages ----------
 step "Install Apache, PHP, and MySQL"
@@ -268,7 +291,57 @@ run "chown data/ to www-data" sudo chown -R www-data:www-data "$APP_DIR/data"
 # ---------- Step 9: apache vhost ----------
 step "Serve the app"
 VHOST=/etc/apache2/sites-available/000-default.conf
+PORTS_CONF=/etc/apache2/ports.conf
+
+EXISTING_PORT=""
+if sudo grep -qF "DocumentRoot ${APP_DIR}" "$VHOST" 2>/dev/null; then
+  EXISTING_PORT=$(sudo grep -oP '(?<=<VirtualHost \*:)\d+' "$VHOST" | head -1)
+fi
+
+if [ -n "$PORT" ]; then
+  info "Using port $PORT (--port)."
+elif [ -n "$EXISTING_PORT" ]; then
+  PORT="$EXISTING_PORT"
+  info "Reusing previously configured port $PORT."
+elif [ ${#FREE_PORTS[@]} -eq 0 ]; then
+  warn "None of the usual ports (${CANDIDATE_PORTS[*]}) are free."
+  if [ -t 0 ]; then
+    read -rp "  Enter a port to use anyway: " PORT
+  else
+    fail "No terminal to ask on — re-run with --port=NNNN. Log at $LOG_FILE"
+    exit 1
+  fi
+else
+  DEFAULT_PORT="${FREE_PORTS[0]}"
+  echo "  Recommended ports (free right now): ${FREE_PORTS[*]}"
+  if [ "$ASSUME_YES" = 1 ] || [ ! -t 0 ]; then
+    PORT="$DEFAULT_PORT"
+    info "Using port $PORT (first free recommendation)."
+  else
+    read -rp "  Which port? [$DEFAULT_PORT] " PORT
+    PORT="${PORT:-$DEFAULT_PORT}"
+  fi
+fi
+
+if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
+  fail "Invalid port: '$PORT'"
+  exit 1
+fi
+
 run "point DocumentRoot at $APP_DIR" sudo sed -i "s#DocumentRoot .*#DocumentRoot ${APP_DIR}#" "$VHOST"
+run "bind vhost to port $PORT" sudo sed -i "s#<VirtualHost \*:[0-9]*>#<VirtualHost *:${PORT}>#" "$VHOST"
+
+# Remove the stock "Listen 80" when moving to a custom port: leaving it in
+# place makes Apache also try to bind 80 on every start, which fails
+# outright (refusing to serve anything, not just skipping :80) if
+# something else already holds that port.
+if [ "$PORT" != "80" ] && sudo grep -qE '^Listen 80$' "$PORTS_CONF"; then
+  sudo sed -i '/^Listen 80$/d' "$PORTS_CONF"
+fi
+if ! sudo grep -qE "^Listen ${PORT}\$" "$PORTS_CONF"; then
+  echo "Listen ${PORT}" | sudo tee -a "$PORTS_CONF" >/dev/null
+  ok "opened port $PORT in Apache's ports.conf"
+fi
 
 # Ubuntu's default apache2.conf sets AllowOverride None for /var/www — without
 # this, data/.htaccess (which blocks direct access to users.json) is silently
@@ -285,16 +358,23 @@ run "enable mod_rewrite" sudo a2enmod rewrite
 run "restart apache2" sudo service apache2 restart
 
 # ---------- summary ----------
+if [ "$PORT" = "80" ]; then
+  URL="http://localhost/"
+else
+  URL="http://localhost:${PORT}/"
+fi
+
 echo
 echo "${BOLD}${GREEN}NXTM is installed.${RESET}"
 echo
 echo "  App directory:  $APP_DIR"
+echo "  Port:            $PORT"
 echo "  DB name:         $DB_NAME"
 echo "  DB user:         $DB_USER@$DB_HOST"
 echo "  DB password:     $DB_PASSWORD"
 echo "  (saved in dbcon.php — write it down elsewhere too if you'll need it again)"
 echo
-echo "Next: open ${BOLD}http://localhost/${RESET} in your Windows browser."
+echo "Next: open ${BOLD}${URL}${RESET} in your Windows browser."
 echo "First visit lands on setup.php — pick a username/password, then scan the"
 echo "QR code with an authenticator app. No phone handy? Run:"
 echo "  sudo apt install -y oathtool"
