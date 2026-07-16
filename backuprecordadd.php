@@ -5,8 +5,12 @@ require_once 'lib/BackupManager.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['AddRecord'])) {
     $label = trim($_POST['label'] ?? '');
-    BackupManager::create($conn, $label);
-    header('Location: backup.php');
+    try {
+        BackupManager::create($conn, $label);
+        header('Location: backup.php');
+    } catch (Throwable $e) {
+        header('Location: backup.php?message=' . urlencode('Backup failed: ' . $e->getMessage()));
+    }
     exit();
 } else {
     echo 'Invalid request.';

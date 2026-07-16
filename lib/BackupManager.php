@@ -39,12 +39,15 @@ class BackupManager
 
     public static function create(mysqli $conn, string $label = ''): string
     {
-        if (!is_dir(self::dir())) {
-            mkdir(self::dir(), 0755, true);
+        if (!is_dir(self::dir()) && !@mkdir(self::dir(), 0755, true) && !is_dir(self::dir())) {
+            throw new RuntimeException('Could not create ' . self::dir() . ' — check its parent is writable by the web server user.');
         }
         $label = self::sanitizeLabel($label);
         $filename = date('Y-m-d_H-i-s') . '_' . ($label !== '' ? $label : 'backup') . '.sql';
-        file_put_contents(self::dir() . '/' . $filename, self::dump($conn));
+        $path = self::dir() . '/' . $filename;
+        if (@file_put_contents($path, self::dump($conn)) === false) {
+            throw new RuntimeException("Could not write $path — check data/backups/ is writable by the web server user.");
+        }
         self::enforceRetention();
         return $filename;
     }

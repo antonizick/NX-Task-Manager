@@ -46,6 +46,12 @@
         </div>
     </div>
 
+    <?php if (isset($_GET['message'])): ?>
+    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px 14px;margin-bottom:12px;color:#856404;font-size:13px;">
+        <?php echo htmlspecialchars($_GET['message']); ?>
+    </div>
+    <?php endif; ?>
+
     <p style="font-size:12px;color:#999;margin-top:-6px;">
         Keeps the last 10 backups. Older ones drop off automatically when a new one is made.
     </p>
