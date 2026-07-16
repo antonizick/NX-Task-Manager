@@ -443,9 +443,14 @@ Once it's installed, pulling in new changes is just a `git pull` from the instal
 ```bash
 cd /var/www/nxtm
 git pull
-sudo chown -R www-data:www-data data
 ```
 
+for older installations or if there are file permission issues when backing up the database (From the admin panel)
+
+```bash
+cd /var/www/nxtm
+sudo chown -R www-data:www-data data
+```
 (Use whatever directory you installed to if it wasn't the default. If you used `install.sh`, the second line is also just `bash install.sh --app-dir=DIR --fix-perms`.)
 
 Don't `sudo git pull` — `install.sh` sets up `/var/www/nxtm` owned by *you*, not root, specifically so plain `git pull` works. Running it as root instead creates any newly-pulled files as root, which the `chown` on the next line is there to undo; skipping straight to `sudo git pull` just re-breaks what it fixed.
