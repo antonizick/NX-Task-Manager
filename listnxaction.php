@@ -30,80 +30,77 @@ if (($valueAction == "recedit" || $valueAction == "recdel" || $valueAction == "r
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <link rel="stylesheet" href="nxstyle.css">
     <style>
         body {
-            background-color: #f4f4f4;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 40px; /* Add this */
-        }
-
-        .form-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .form-header h2 {
-            margin: 0 0 10px;
-        }
-
-        .form-header .info {
-            font-size: 0.9rem;
-            color: #555;
+            padding-top: 40px;
         }
 
         .form-container {
-            background: white;
-            border: 1px solid #ccc;
+            background: #fff;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
             padding: 20px;
             max-width: 600px;
             width: 100%;
         }
 
+        .modal-content { background: #fff; }
+
         .modal-header,
         .modal-footer {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-bottom: 10px;
         }
+        .modal-header { justify-content: space-between; }
+        .modal-footer { justify-content: flex-end; gap: 10px; }
 
-        .modal-footer {
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-
-        .modal-body label {
-            margin-top: 10px;
+        .close {
+            background: transparent;
+            border: 0;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
         }
 
         .btn {
             padding: 8px 16px;
             border: none;
             border-radius: 5px;
+            font-size: 13px;
             cursor: pointer;
+            transition: filter .12s ease;
         }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
+        .btn:hover { filter: brightness(1.08); }
 
         .btn-secondary {
             background-color: #6c757d;
-            color: white;
+            color: #fff;
         }
+
+        body[data-theme="dark"] .form-container {
+            background: #232730;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+        body[data-theme="dark"] .modal-content { background: #232730; }
+        body[data-theme="dark"] .btn-secondary { background-color: #4a5568; }
     </style>
 </head>
 <body>
 
-<?php 
+<script>
+(function() {
+    if (localStorage.getItem('nx-theme') === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+    }
+})();
+</script>
+
+<?php
 // --------------------------- Edit Record requested, present data for editing
 if ($valueAction == "recedit") {
 ?>

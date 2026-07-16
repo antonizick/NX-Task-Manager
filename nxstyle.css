@@ -45,7 +45,7 @@ body {
     background-color: #001233;
     color: #fff !important;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 6px 16px;
     font-size: 12px;
     font-weight: 500;
@@ -54,6 +54,7 @@ body {
     display: inline-block;
     line-height: 1.6;
     letter-spacing: 0.2px;
+    transition: background-color .15s ease;
 }
 .nx-btn:hover { background-color: #002060; }
 
@@ -63,13 +64,14 @@ body {
 .btn-primary:active {
     background-color: #001233 !important;
     border-color: #001233 !important;
+    transition: background-color .15s ease, border-color .15s ease;
 }
 .btn-primary:hover { background-color: #002060 !important; border-color: #002060 !important; }
 
 /* Table card wrapper */
 .nx-table-card {
     background: #fff;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 1px 8px rgba(0,0,0,0.09);
     padding: 16px 16px 12px;
     overflow-x: auto;
@@ -118,6 +120,7 @@ table.dataTable td {
 }
 table.dataTable tbody tr.odd  { background-color: #edf1fb; }
 table.dataTable tbody tr.even { background-color: #ffffff; }
+table.dataTable tbody tr td { transition: background-color .1s ease; }
 table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
 
 /* DataTables wrapper chrome */
@@ -145,10 +148,11 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
 .dt-buttons .dt-button {
     background: #f4f6fb !important;
     border: 1px solid #c8d0df !important;
-    border-radius: 3px !important;
+    border-radius: 4px !important;
     font-size: 11px !important;
     color: #444 !important;
     padding: 3px 10px !important;
+    transition: background-color .15s ease, color .15s ease;
 }
 .dt-buttons .dt-button:hover {
     background: #e0e6f5 !important;
@@ -159,7 +163,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
 .action-buttons { display: flex; gap: 4px; }
 .icon-button {
     border: 1px solid #c8d0df;
-    border-radius: 3px;
+    border-radius: 4px;
     width: 20px;
     height: 20px;
     padding: 0;
@@ -169,6 +173,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color .15s ease, border-color .15s ease;
 }
 .icon-button:hover { background: #e0e6f5; border-color: #001233; }
 .icon-button img { width: 14px; height: 14px; display: block; }
@@ -184,7 +189,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
 
 /* Modals */
 .modal-content {
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     border: none;
     box-shadow: 0 4px 24px rgba(0,0,0,0.18);
@@ -215,6 +220,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
     border-radius: 4px;
     font-size: 12px;
     padding: 4px 8px;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 .modal-body input[type="text"]:focus,
 .modal-body input[type="number"]:focus,
@@ -265,7 +271,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
 /* Memo / list detail page */
 .nx-detail-card {
     background: #fff;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 1px 8px rgba(0,0,0,0.09);
     padding: 24px 28px;
     max-width: 700px;
@@ -295,6 +301,7 @@ table.dataTable tbody tr:hover td { background-color: #dce6f7 !important; }
     font-size: 13px;
     padding: 6px 10px;
     font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 .nx-detail-card input[type="text"]:focus,
 .nx-detail-card textarea:focus {
