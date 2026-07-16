@@ -153,61 +153,57 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 3. You will be prompted to create a **UNIX username** (can be different from your Windows username) and a **password**.
    - Type the username and press Enter.
    - Type the password (it won't show as you type) and press Enter, then confirm it.
-4. Once complete, you'll see the Ubuntu bash prompt (`$`). You are now inside Linux!
+4. Once complete, you'll see the Ubuntu bash prompt (`$`). **You are now logged into your Ubuntu instance** — this is a real Linux shell, separate from PowerShell/Windows. Everything from here through the end of "Installing NXTM" below happens in this Ubuntu prompt, not in PowerShell.
+
+**Logging out and back in**, if you close the window or want to start over:
+- **To log out**: type `exit` (or press Ctrl+D) at the Ubuntu `$` prompt. This drops you back to PowerShell/Windows.
+- **To log back in**: open the **Start menu** and search for **Ubuntu** again (or type `wsl` in PowerShell/Windows Terminal) — you'll land right back at your Ubuntu `$` prompt, same files, same installed packages. You do **not** need to redo Steps 1–2; WSL keeps your Linux install persistent between launches.
 
 ### Alternative: Install a Specific Ubuntu Version
-If you want a particular version (e.g., Ubuntu 24.04):
-- In **Administrator PowerShell**, run:
+If you want a particular version (e.g., Ubuntu 24.04), run this **in Administrator PowerShell** (not Ubuntu):
   ```
   wsl --install -d Ubuntu
   ```
-- Or list available distributions first:
+Or list available distributions first (also **in PowerShell**):
   ```
   wsl --list --online
   ```
 
 ### Step 3: Verify and Update Everything
-Inside the Ubuntu terminal (or reopen it):
-1. Update the package list and upgrade packages:
+1. **In your Ubuntu terminal** (log back in first if you closed it — see above), update the package list and upgrade packages:
    ```
    sudo apt update && sudo apt upgrade -y
    ```
-2. Check WSL version (should show 2):
+2. **In PowerShell/Windows Terminal** (not Ubuntu), check the WSL version (should show 2):
    ```
    wsl --version
    ```
-   (Run this in PowerShell/Windows Terminal.)
 
-To confirm your distro:
+To confirm your distro, run this **in PowerShell**:
 ```
 wsl -l -v
 ```
 
+Install common tools — **in your Ubuntu terminal**:
+```
+sudo apt install build-essential git curl -y
+```
+
 ### Useful Commands and Tips
-- **Launch Ubuntu**: Type `ubuntu` in Start or use `wsl` in PowerShell/Terminal.
-- **Open files from Windows in WSL**: Your Windows files are at `/mnt/c/` (e.g., `cd /mnt/c/Users/YourName`).
-- **Set default distro** (if you have multiple):
+- **Launch Ubuntu** (from Windows): Type `ubuntu` in Start, or type `wsl` in PowerShell/Terminal.
+- **Open Windows files from inside Ubuntu**: your Windows files are at `/mnt/c/` (e.g., `cd /mnt/c/Users/YourName`) — but don't put the NXTM code there; see Step 2 of "Installing NXTM" below for why.
+- **Set default distro** (if you have multiple) — run **in PowerShell**:
   ```
   wsl --set-default Ubuntu
   ```
-- **Shutdown WSL** (when done):
+- **Shutdown WSL** (when done) — run **in PowerShell**:
   ```
   wsl --shutdown
   ```
-- **Update WSL kernel**:
+- **Update WSL kernel** — run **in PowerShell**:
   ```
   wsl --update
   ```
-- Install common tools inside Ubuntu:
-  ```
-  sudo apt install build-essential git curl -y
-  ```
-
-### Optional: Install via Microsoft Store (Manual Method)
-If the one-command method doesn't work:
-1. Go to Microsoft Store → Search for **Ubuntu** (or Ubuntu 24.04 LTS) → Click **Get** / **Install**.
-2. Enable features manually if needed:
-   - Search for **Turn Windows features on or off** → Check **Windows Subsystem for Linux** and **Virtual Machine Platform** → Restart.
 
 ### Troubleshooting
 - **Error about virtualization**: Ensure Virtualization is enabled in BIOS/UEFI (restart PC → enter BIOS → look for Intel VT-x or AMD SVM).
@@ -254,14 +250,18 @@ Clone into the Linux filesystem under `/var/www` — not `/mnt/c/...` (file I/O 
 
 ```bash
 sudo mysql -e "CREATE DATABASE antonizi_nxtask CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
-sudo mysql -e "CREATE USER 'nxtm'@'localhost' IDENTIFIED BY 'change-this-password';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON antonizi_nxtask.* TO 'nxtm'@'localhost';"
+sudo mysql -e "CREATE USER 'nxtm'@'127.0.0.1' IDENTIFIED BY 'change-this-password';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON antonizi_nxtask.* TO 'nxtm'@'127.0.0.1';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
 mysql -h 127.0.0.1 -u nxtm -p antonizi_nxtask < db/schema.sql
 mysql -h 127.0.0.1 -u nxtm -p antonizi_nxtask < db/seed.sql
 ```
-(`-h 127.0.0.1` forces a TCP connection instead of the local Unix socket — on some Ubuntu/WSL setups the socket directory `/var/run/mysqld` isn't world-traversable, which makes the plain `mysql -u nxtm -p` form fail with a permission error even though the credentials are correct.)
+Two things to note about these commands:
+
+- **The account host must be `127.0.0.1`, not `localhost`.** MySQL treats `'user'@'localhost'` as "only allow this login over the local Unix socket" — it will never match a TCP connection, even one to `127.0.0.1` from the same machine. The two `mysql -h 127.0.0.1 ...` import commands below connect over TCP (see next bullet for why), so the account has to be created for that exact host or every login attempt fails with "Access denied" regardless of password.
+- **`-h 127.0.0.1` forces a TCP connection** instead of the local Unix socket — on some Ubuntu/WSL setups the socket directory `/var/run/mysqld` isn't world-traversable, which makes the plain `mysql -u nxtm -p` form fail with a permission error even though the credentials are correct.
+- The last two commands will each prompt `Enter password:` — type the same password you used above (`change-this-password`, or whatever you changed it to). Nothing appears on screen as you type; that's normal, just type it and press Enter.
 
 `db/schema.sql` creates the 8 base tables and 10 views the app queries (`viewTasks`, `viewMemo`, etc — see [Database](#database) above). `db/seed.sql` adds the color-lookup rows the views join against, plus a few generic Category/Status rows so the Add Task dropdowns aren't empty on first load — rename or delete them from Admin once you're logged in.
 
@@ -340,5 +340,5 @@ With no `data/users.json` yet, you'll land on `setup.php` automatically:
 - **Blank page / 500 error**: check `sudo tail -f /var/log/apache2/error.log` while reloading — almost always a missing PHP extension (`php-mysqli`) or a `dbcon.php` credential typo.
 - **DataTables show "Ajax error" or won't load rows**: usually the `php.ini` error-reporting mismatch from Step 5 — a warning is leaking into the JSON response. Check the raw response of e.g. `data-fetcher.php` in the browser's Network tab.
 - **`data/users.json` won't save / setup.php loops back to itself**: `data/` isn't writable by `www-data` — redo Step 6.
-- **"Access denied for user"**: re-check the `GRANT` in Step 3 and the credentials in `dbcon.php` match exactly.
+- **"Access denied for user"**: re-check the `GRANT` in Step 3 and the credentials in `dbcon.php` match exactly. If you created the account as `'nxtm'@'localhost'` instead of `'nxtm'@'127.0.0.1'`, that's the whole problem — see the note in Step 3; `localhost` accounts never work over the TCP connection these instructions use.
 - **Port 3308 confusion**: that port is only used by the *production* tunnel in `dbcon.php`'s original placeholder comment. Locally you're talking to MySQL directly on its default port (3306), not through a tunnel.
