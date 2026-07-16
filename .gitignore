@@ -13,6 +13,9 @@ php.ini
 
 # Data
 data/users.json
+db/*.sql.gz
+!db/schema.sql
+!db/seed.sql
 
 # OS
 .DS_Store

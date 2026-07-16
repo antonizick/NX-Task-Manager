@@ -116,3 +116,229 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 <img src="screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png">
 <img src="screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png">
 <img src="screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png">
+
+
+
+
+
+
+# Local Deployment
+
+**Here are explicit, step-by-step instructions to install WSL (Windows Subsystem for Linux) and set up an Ubuntu instance on Windows 11.**
+
+### Prerequisites
+- You need Windows 11 (or Windows 10 version 2004/build 19041 or higher).
+- Administrative privileges on your machine.
+- An internet connection.
+
+### Step 1: Install WSL (Recommended One-Command Method)
+1. Open **PowerShell** as Administrator:
+   - Click the Start button, type **PowerShell**, right-click **Windows PowerShell**, and select **Run as administrator**.
+
+2. Run this command:
+   ```
+   wsl --install
+   ```
+   - This single command does the following:
+     - Enables the required Windows features (WSL and Virtual Machine Platform).
+     - Downloads and installs the latest Linux kernel.
+     - Sets WSL 2 as the default version.
+     - Installs the default Ubuntu distribution.
+
+3. Restart your computer when prompted.
+
+### Step 2: Complete Ubuntu Setup (First Launch)
+1. After restarting, open the **Start menu** and search for **Ubuntu** (or launch it from the PowerShell output).
+2. The first time it runs, it will download and install Ubuntu (this may take a few minutes).
+3. You will be prompted to create a **UNIX username** (can be different from your Windows username) and a **password**.
+   - Type the username and press Enter.
+   - Type the password (it won't show as you type) and press Enter, then confirm it.
+4. Once complete, you'll see the Ubuntu bash prompt (`$`). You are now inside Linux!
+
+### Alternative: Install a Specific Ubuntu Version
+If you want a particular version (e.g., Ubuntu 24.04):
+- In **Administrator PowerShell**, run:
+  ```
+  wsl --install -d Ubuntu-24.04
+  ```
+- Or list available distributions first:
+  ```
+  wsl --list --online
+  ```
+
+### Step 3: Verify and Update Everything
+Inside the Ubuntu terminal (or reopen it):
+1. Update the package list and upgrade packages:
+   ```
+   sudo apt update && sudo apt upgrade -y
+   ```
+2. Check WSL version (should show 2):
+   ```
+   wsl --version
+   ```
+   (Run this in PowerShell/Windows Terminal.)
+
+To confirm your distro:
+```
+wsl -l -v
+```
+
+### Useful Commands and Tips
+- **Launch Ubuntu**: Type `ubuntu` in Start or use `wsl` in PowerShell/Terminal.
+- **Open files from Windows in WSL**: Your Windows files are at `/mnt/c/` (e.g., `cd /mnt/c/Users/YourName`).
+- **Set default distro** (if you have multiple):
+  ```
+  wsl --set-default Ubuntu
+  ```
+- **Shutdown WSL** (when done):
+  ```
+  wsl --shutdown
+  ```
+- **Update WSL kernel**:
+  ```
+  wsl --update
+  ```
+- Install common tools inside Ubuntu:
+  ```
+  sudo apt install build-essential git curl -y
+  ```
+
+### Optional: Install via Microsoft Store (Manual Method)
+If the one-command method doesn't work:
+1. Go to Microsoft Store → Search for **Ubuntu** (or Ubuntu 24.04 LTS) → Click **Get** / **Install**.
+2. Enable features manually if needed:
+   - Search for **Turn Windows features on or off** → Check **Windows Subsystem for Linux** and **Virtual Machine Platform** → Restart.
+
+### Troubleshooting
+- **Error about virtualization**: Ensure Virtualization is enabled in BIOS/UEFI (restart PC → enter BIOS → look for Intel VT-x or AMD SVM).
+- **"WSL not installed"**: Rerun `wsl --install` or check Windows Updates.
+- **Permission issues**: Always use Administrator PowerShell for setup commands.
+- For more help: Run `wsl --help` or visit the official Microsoft docs.
+
+You should now have a fully functional Ubuntu environment integrated with Windows 11. You can run Linux commands, tools, and even GUI apps (with WSLg on Windows 11). Enjoy!
+
+---
+
+# Installing NXTM
+
+Everything below runs **inside your Ubuntu/WSL shell** (the `$` prompt from Step 2 above). It installs Apache + PHP + MySQL, loads the database schema, and gets you to a working local copy of the app.
+
+## Step 1: Install Apache, PHP, and MySQL
+
+```bash
+sudo apt update
+sudo apt install -y apache2 mysql-server php libapache2-mod-php php-mysqli php-cli git
+```
+
+- **PHP 8.1 or newer** is required (the `data/`-backed user store and TOTP library use typed properties). `apt install php` gives you whatever version ships with your Ubuntu release (8.1 on 22.04, 8.3 on 24.04) — either works.
+- **MySQL, not MariaDB.** The schema uses the `utf8mb4_0900_ai_ci` collation, which is MySQL-8-specific and doesn't exist on MariaDB. `apt install mysql-server` on modern Ubuntu installs real MySQL 8, so this is already correct — just don't substitute `mariadb-server`.
+- Confirm both installed and running:
+  ```bash
+  php -v
+  sudo service mysql start
+  sudo service apache2 start
+  ```
+  (WSL doesn't run services automatically on boot — `service <name> start` after opening a new shell.)
+
+## Step 2: Get the code
+
+```bash
+sudo mkdir -p /var/www/nxtm
+sudo chown $USER:$USER /var/www/nxtm
+git clone https://github.com/antonizick/NX-Task-Manager.git /var/www/nxtm
+cd /var/www/nxtm
+```
+Clone into the Linux filesystem under `/var/www` — not `/mnt/c/...` (file I/O through the Windows filesystem bridge is much slower) and not under your home directory either: Ubuntu creates home directories as `750`, which blocks Apache (`www-data`) from traversing into them at all and gets you a flat 403 regardless of anything inside. `/var/www` is world-traversable by default, which is why it's the standard place to put anything Apache serves.
+
+## Step 3: Create the database
+
+```bash
+sudo mysql -e "CREATE DATABASE antonizi_nxtask CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+sudo mysql -e "CREATE USER 'nxtm'@'localhost' IDENTIFIED BY 'change-this-password';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON antonizi_nxtask.* TO 'nxtm'@'localhost';"
+sudo mysql -e "FLUSH PRIVILEGES;"
+
+mysql -h 127.0.0.1 -u nxtm -p antonizi_nxtask < db/schema.sql
+mysql -h 127.0.0.1 -u nxtm -p antonizi_nxtask < db/seed.sql
+```
+(`-h 127.0.0.1` forces a TCP connection instead of the local Unix socket — on some Ubuntu/WSL setups the socket directory `/var/run/mysqld` isn't world-traversable, which makes the plain `mysql -u nxtm -p` form fail with a permission error even though the credentials are correct.)
+
+`db/schema.sql` creates the 8 base tables and 10 views the app queries (`viewTasks`, `viewMemo`, etc — see [Database](#database) above). `db/seed.sql` adds the color-lookup rows the views join against, plus a few generic Category/Status rows so the Add Task dropdowns aren't empty on first load — rename or delete them from Admin once you're logged in.
+
+## Step 4: Point the app at your database
+
+Edit `dbcon.php` and replace the placeholders with what you just created:
+
+```php
+$host     = '127.0.0.1';
+$user     = 'nxtm';
+$password = 'change-this-password';
+$database = 'antonizi_nxtask';
+```
+
+(Production points at a remote tunnel, `127.0.0.1:3308` — locally, just `127.0.0.1` on MySQL's default port 3306.)
+
+## Step 5: Match PHP's error reporting to production
+
+This matters more than it looks: the `*data-fetcher.php` AJAX endpoints `echo json_encode(...)` with nothing else — if PHP prints so much as a stray deprecation notice above that, the response stops being valid JSON and every DataTable on the page silently breaks. Production's `php.ini` suppresses these; a stock Ubuntu PHP install doesn't. Find your php.ini and add the same settings:
+
+```bash
+sudo find /etc/php -name php.ini   # locate the apache2 SAPI's php.ini, e.g. /etc/php/8.3/apache2/php.ini
+```
+
+Add/edit these lines in that file:
+
+```ini
+error_reporting = E_ALL & ~E_STRICT & ~E_NOTICE & ~E_DEPRECATED
+expose_php = Off
+post_max_size = 60M
+upload_max_filesize = 60M
+memory_limit = 3000M
+max_execution_time = 120
+session.save_path = /tmp
+date.timezone = America/New_York
+```
+
+(`date.timezone` — use whatever your own timezone is; it just needs to be a valid PHP timezone identifier, not left blank.)
+
+Restart Apache to pick it up:
+```bash
+sudo service apache2 restart
+```
+
+## Step 6: Let the web server write to `data/`
+
+First login creates `data/users.json`; Apache's user needs write access to the `data/` directory:
+
+```bash
+sudo chown -R www-data:www-data /var/www/nxtm/data
+```
+
+## Step 7: Serve the app
+
+Point Apache's default site at the repo instead of the standard `/var/www/html`:
+
+```bash
+sudo sed -i "s#DocumentRoot .*#DocumentRoot /var/www/nxtm#" /etc/apache2/sites-available/000-default.conf
+sudo a2enmod rewrite
+sudo service apache2 restart
+```
+
+Visit **http://localhost/** from your Windows browser — WSL2 forwards `localhost` automatically, no extra networking setup needed.
+
+## Step 8: Create your account (first run)
+
+With no `data/users.json` yet, you'll land on `setup.php` automatically:
+
+1. Pick a username and password (8+ characters).
+2. You'll get a QR code — scan it with an authenticator app (Google Authenticator, Authy, Aegis, etc. on your phone) and enter the 6-digit code it shows to confirm.
+   - No phone handy? `sudo apt install oathtool` then `oathtool --totp -b <secret-from-the-page>` prints the same 6-digit code from the command line.
+3. You're redirected to `login.php` — log in with your new password + TOTP code, and you're in.
+
+## Troubleshooting
+
+- **Blank page / 500 error**: check `sudo tail -f /var/log/apache2/error.log` while reloading — almost always a missing PHP extension (`php-mysqli`) or a `dbcon.php` credential typo.
+- **DataTables show "Ajax error" or won't load rows**: usually the `php.ini` error-reporting mismatch from Step 5 — a warning is leaking into the JSON response. Check the raw response of e.g. `data-fetcher.php` in the browser's Network tab.
+- **`data/users.json` won't save / setup.php loops back to itself**: `data/` isn't writable by `www-data` — redo Step 6.
+- **"Access denied for user"**: re-check the `GRANT` in Step 3 and the credentials in `dbcon.php` match exactly.
+- **Port 3308 confusion**: that port is only used by the *production* tunnel in `dbcon.php`'s original placeholder comment. Locally you're talking to MySQL directly on its default port (3306), not through a tunnel.
