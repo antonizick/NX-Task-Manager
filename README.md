@@ -10,6 +10,7 @@ A personal productivity web app (task tracker, link manager, memos, lists) built
 - **Lists** — multi-item lists with custom list definitions
 - **Memos** — quick notes and memos with archive support
 - **Admin** — manage categories and statuses used across modules
+- **Backups** — one-click data backup/restore from the Admin page, keeps the last 10
 
 ## Tech Stack
 
@@ -38,12 +39,15 @@ A personal productivity web app (task tracker, link manager, memos, lists) built
 ├── memopage.php           # Memos module
 ├── mxcat.php              # Admin Categories module
 ├── mxstatus.php           # Admin Statuses module
+├── backup.php             # Admin Backups module
 ├── *.php                  # Handlers (recordadd, action, data-fetcher, etc.)
 ├── lib/
 │   ├── GoogleAuthenticator.php
-│   └── UserStore.php
+│   ├── UserStore.php
+│   └── BackupManager.php  # Backup dump/restore logic
 ├── data/
-│   └── users.json         # User accounts (blocked from web access)
+│   ├── users.json         # User accounts (blocked from web access)
+│   └── backups/           # Retained backups, up to 10 (blocked from web access)
 └── DataTables/            # DataTables vendored assets
 └── Bootstrap/             # Bootstrap CSS vendored
 └── qrcodejs/              # QR code renderer vendored (used by setup.php)
@@ -95,6 +99,15 @@ Every page begins with `require_once 'auth_check.php'`, which enforces session a
 - Regular requests redirect to `login.php`
 
 Login is two-step: password verification followed by TOTP (Google Authenticator) code.
+
+## Backups
+
+The Admin → Backups page (`backup.php`) backs up and restores app data straight from the browser — no server shell access needed, since shared hosting can't be assumed to have `mysqldump` available. `lib/BackupManager.php` dumps/restores the 8 base tables (not the derived views, which are just re-queried) as plain SQL.
+
+- **Create a backup**: "Create Backup" button, optional name. Saved as `<timestamp>_<name>.sql` (or `<timestamp>_backup.sql` if you leave the name blank) in `data/backups/`, which is `.htaccess`-blocked from direct web access like `data/users.json`.
+- **Retention**: only the 10 most recent backups are kept — making a new one silently drops the oldest past that.
+- **Download**: grabs the raw `.sql` file, e.g. to keep an off-host copy somewhere a total hosting outage wouldn't touch (backups living in `data/backups/` protect against "I deleted the wrong thing," not against losing the host itself).
+- **Restore**: pick any of the retained 10, or upload a `.sql` file downloaded earlier. Restoring **replaces all current data** — the confirmation requires typing `RESTORE` to proceed, and a safety backup of whatever's currently in the database is taken automatically right before the restore runs, so a bad restore is itself one more restore away from being undone.
 
 ## Development
 
