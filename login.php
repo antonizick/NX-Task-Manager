@@ -41,8 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
 
         if ($store->verifyPassword($username, $password)) {
-            $_SESSION['login_pending_user'] = $username;
-            // fall through to render step 2
+            if ($store->getTotpSecret($username)) {
+                $_SESSION['login_pending_user'] = $username;
+                // fall through to render step 2
+            } else {
+                // No TOTP enrolled — password alone is enough.
+                session_regenerate_id(true);
+                $_SESSION['authenticated'] = true;
+                $_SESSION['username']      = $username;
+                header('Location: index.php');
+                exit;
+            }
         } else {
             $error = 'Invalid username or password.';
         }

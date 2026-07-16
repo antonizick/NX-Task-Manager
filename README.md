@@ -46,6 +46,7 @@ A personal productivity web app (task tracker, link manager, memos, lists) built
 │   └── users.json         # User accounts (blocked from web access)
 └── DataTables/            # DataTables vendored assets
 └── Bootstrap/             # Bootstrap CSS vendored
+└── qrcodejs/              # QR code renderer vendored (used by setup.php)
 ```
 
 ## Module Pattern
@@ -157,7 +158,26 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 
 **Logging out and back in**, if you close the window or want to start over:
 - **To log out**: type `exit` (or press Ctrl+D) at the Ubuntu `$` prompt. This drops you back to PowerShell/Windows.
-- **To log back in**: open the **Start menu** and search for **Ubuntu** again (or type `wsl` in PowerShell/Windows Terminal) — you'll land right back at your Ubuntu `$` prompt, same files, same installed packages. You do **not** need to redo Steps 1–2; WSL keeps your Linux install persistent between launches.
+- **To log back in as your user** (not root, and into the right distro if you have more than one installed): don't just type bare `wsl` — if you have another WSL distro already installed (Docker Desktop's `docker-desktop` distro is a common one that sneaks in), plain `wsl` launches whichever one is currently the *default*, which may not be the Ubuntu you just set up, and a distro that's never had its first-launch wizard completed drops you in as **root** instead of your user.
+
+  1. Check what's installed and see the exact name of your distro:
+     ```
+     wsl -l -v
+     ```
+     (**run in PowerShell**). Look for the `*` marking the default, and note the exact `NAME` column value (e.g. `Ubuntu` or `Ubuntu-24.04`).
+  2. Launch that specific distro as your specific user (**in PowerShell**):
+     ```
+     wsl -d <NAME> -u <your-username>
+     ```
+     Replace `<NAME>` with what you saw above and `<your-username>` with the UNIX username you created in step 3.
+  3. Optional — make that the default for plain `wsl`/`ubuntu` going forward: `wsl --set-default <NAME>` (**in PowerShell**) makes it the default *distro*; to make it always log in as your user instead of root, run `wsl.exe --manage <NAME> --set-default-user <your-username>` (**in PowerShell**, WSL 2.x+) — or, from inside the distro, add to `/etc/wsl.conf`:
+     ```ini
+     [user]
+     default=your-username
+     ```
+     then from PowerShell run `wsl --shutdown` and relaunch.
+
+  You do **not** need to redo Steps 1–2 for any of this; WSL keeps your Linux install persistent between launches.
 
 ### Alternative: Install a Specific Ubuntu Version
 If you want a particular version (e.g., Ubuntu 24.04), run this **in Administrator PowerShell** (not Ubuntu):
@@ -354,9 +374,11 @@ Visit **http://localhost/** from your Windows browser — WSL2 forwards `localho
 With no `data/users.json` yet, you'll land on `setup.php` automatically:
 
 1. Pick a username and password (8+ characters).
-2. You'll get a QR code — scan it with an authenticator app (Google Authenticator, Authy, Aegis, etc. on your phone) and enter the 6-digit code it shows to confirm.
-   - No phone handy? `sudo apt install oathtool` then `oathtool --totp -b <secret-from-the-page>` prints the same 6-digit code from the command line.
-3. You're redirected to `login.php` — log in with your new password + TOTP code, and you're in.
+2. Choose one:
+   - **Set up two-factor** — you'll get a QR code (rendered locally, no CDN/internet needed to display it) — scan it with an authenticator app (Google Authenticator, Authy, Aegis, etc.) and enter the 6-digit code it shows to confirm.
+     - No phone handy? `sudo apt install oathtool` then `oathtool --totp -b <secret-from-the-page>` prints the same 6-digit code from the command line.
+   - **Skip — use password only** — creates the account with no second factor. Login is then just username + password, no authenticator app needed. You can't add 2FA to that account later without editing `data/users.json` by hand.
+3. You're redirected to `login.php` — log in with your new credentials, and you're in.
 
 ## Troubleshooting
 

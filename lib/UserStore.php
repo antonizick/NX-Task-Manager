@@ -12,7 +12,7 @@ class UserStore {
         return count($this->load()) > 0;
     }
 
-    public function addUser(string $username, string $password, string $totpSecret): bool {
+    public function addUser(string $username, string $password, ?string $totpSecret = null): bool {
         $users = $this->load();
         foreach ($users as $user) {
             if ($user['username'] === $username) {

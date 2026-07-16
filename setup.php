@@ -61,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['setup_step']) && $_PO
         $error = 'Password must be at least 8 characters.';
     } elseif ($password !== $password2) {
         $error = 'Passwords do not match.';
+    } elseif (($_POST['action'] ?? '') === 'skip') {
+        $store->addUser($username, $password);
+        header('Location: login.php?message=Account+created.+Please+log+in.');
+        exit;
     } else {
         $_SESSION['setup_username'] = $username;
         $_SESSION['setup_password'] = $password;
@@ -86,9 +90,7 @@ $qrUri         = $step === 2 ? $ga->getQRCodeUri('NXTM', $setupUsername, $setupS
     <title>NXTM &mdash; Create Account</title>
     <link rel="stylesheet" href="Bootstrap/bootstrap.min.css">
     <?php if ($step === 2): ?>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-            integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4fn5L1LaDD3jgTn1FS42w=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="qrcodejs/qrcode.min.js"></script>
     <?php endif; ?>
     <style>
         body {
@@ -215,7 +217,13 @@ $qrUri         = $step === 2 ? $ga->getQRCodeUri('NXTM', $setupUsername, $setupS
             <input type="password" id="password" name="password" autocomplete="new-password">
             <label for="password2">Confirm Password</label>
             <input type="password" id="password2" name="password2" autocomplete="new-password">
-            <button type="submit" class="btn-setup">Next &rarr;</button>
+            <button type="submit" name="action" value="continue" class="btn-setup">Next &rarr; Set up two-factor</button>
+            <button type="submit" name="action" value="skip" class="btn-setup" style="background-color:#666;margin-top:8px;">Skip &mdash; use password only</button>
+            <p class="hint" style="margin:10px 0 0;">
+                Two-factor authentication (Google Authenticator) adds a second
+                login step but isn't required. You can skip it now and log in
+                with just your username and password.
+            </p>
         </form>
 
         <?php else: ?>
