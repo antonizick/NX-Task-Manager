@@ -28,6 +28,7 @@
 <div class="nx-admin-nav">
     <a href="mx.php">[Categories]</a>
     <strong>[Statuses]</strong>
+    <a href="backup.php">[Backups]</a>
 </div>
 
 <div class="nx-page">
