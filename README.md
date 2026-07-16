@@ -123,6 +123,33 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 
 
 
+# TL;DR Quick Local Install
+
+For anyone who just wants the commands. Full explanations, troubleshooting, and the manual (no-script) path are in **Local Deployment** below if anything here doesn't just work.
+
+**In PowerShell** (only if you don't already have WSL):
+```
+wsl --install
+```
+
+**In PowerShell:**
+```
+wsl --install -d Ubuntu
+```
+
+**In your Ubuntu terminal** (log back in first if you closed it — see Local Deployment below):
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+**Still in Ubuntu:**
+```bash
+sudo mkdir -p /var/www/nxtm && sudo chown $USER:$USER /var/www/nxtm
+git clone https://github.com/antonizick/NX-Task-Manager.git /var/www/nxtm
+cd /var/www/nxtm
+bash install.sh
+```
+
 # Local Deployment
 
 **Here are explicit, step-by-step instructions to install WSL (Windows Subsystem for Linux) and set up an Ubuntu instance on Windows 11.**
