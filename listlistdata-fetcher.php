@@ -9,16 +9,13 @@ require_once 'dbcon.php';
 
 // Query the data table
 if (!empty($valuePass)) {
-    $lengthOfValpass = mb_strlen($valuePass, 'UTF-8');
-    $sql = "SELECT * FROM viewListData WHERE lcode = '". $valuePass."'";
-  	// $sql = "SELECT * FROM viewListData WHERE lcode = '". $valuePass ."' AND LENGTH(lcode) = LENGTH('". $valuePass ."')";
-    // $sql = "SELECT * FROM viewListData WHERE lcode = '$valuePass'";
-
+    $stmt = $conn->prepare("SELECT * FROM viewListData WHERE lcode = ?");
+    $stmt->bind_param("s", $valuePass);
+    $stmt->execute();
+    $result = $stmt->get_result();
 } else {
-    $sql = "SELECT * FROM viewListData";
+    $result = $conn->query("SELECT * FROM viewListData");
 }
-
-$result = $conn->query($sql);
 
 $data = [];
 
