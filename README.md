@@ -159,7 +159,7 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 If you want a particular version (e.g., Ubuntu 24.04):
 - In **Administrator PowerShell**, run:
   ```
-  wsl --install -d Ubuntu-24.04
+  wsl --install -d Ubuntu
   ```
 - Or list available distributions first:
   ```
