@@ -217,7 +217,30 @@ You should now have a fully functional Ubuntu environment integrated with Window
 
 # Installing NXTM
 
-Everything below runs **inside your Ubuntu/WSL shell** (the `$` prompt from Step 2 above). It installs Apache + PHP + MySQL, loads the database schema, and gets you to a working local copy of the app.
+Everything below runs **inside your Ubuntu/WSL shell** (the `$` prompt from Step 2 above).
+
+## Quick Install (recommended)
+
+`install.sh`, at the root of this repo, automates every step below: installs Apache/PHP/MySQL, clones the code if it isn't already present, creates the database with a random password, imports the schema/seed, configures `dbcon.php`/`php.ini`/Apache, and locks down `data/` — with progress commentary as it goes, and retry/skip/abort prompts if any individual step fails instead of just dying.
+
+```bash
+sudo mkdir -p /var/www/nxtm && sudo chown $USER:$USER /var/www/nxtm
+git clone https://github.com/antonizick/NX-Task-Manager.git /var/www/nxtm
+cd /var/www/nxtm
+bash install.sh
+```
+
+It's safe to re-run — every step checks current state first and skips what's already done (existing database, existing `dbcon.php`, etc.), so if it stops partway through (or you chose "skip" on a step), just run it again.
+
+Flags:
+- `--reset-db` — drop and re-import the schema/seed (destructive, asks to confirm)
+- `--password=SECRET` — use this DB password instead of auto-generating one
+- `--yes` — auto-confirm prompts
+- `--app-dir=DIR` — install somewhere other than `/var/www/nxtm`
+
+When it finishes, skip to **Step 8: Create your account (first run)** below — the rest is manual/reference documentation for what the script just did, useful if a step needs troubleshooting.
+
+## Manual Install (step-by-step, or if the script fails)
 
 ## Step 1: Install Apache, PHP, and MySQL
 
