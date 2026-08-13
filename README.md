@@ -1,3 +1,9 @@
+## Screenshots
+
+<img src="screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png">
+<img src="screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png">
+<img src="screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png">
+
 # NXTM
 
 A personal productivity web app (task tracker, link manager, memos, lists) built in plain PHP with MySQL. No framework, no build step — files are deployed directly to a shared hosting account at antonizick.com via FTP.
@@ -124,15 +130,6 @@ The database connection is configured in `dbcon.php` pointing to a remote MySQL 
 - Files are deployed directly via FTP to the hosting account
 - `.htaccess` has hotlink prevention rules tied to antonizick.com
 - `data/.htaccess` blocks direct web access to `users.json`
-
-## Screenshots
-
-<img src="screenshots/NXTM 2026-05-03 17_43_05-Llama Claude.png">
-<img src="screenshots/NXTM 2026-05-03 17_43_37-Llama Claude.png">
-<img src="screenshots/NXTM 2026-05-03 17_44_29-Llama Claude.png">
-
-
-
 
 
 
