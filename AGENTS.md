@@ -11,7 +11,7 @@ Full Lucent identity, LTMemory, and reminders are **not** loaded in this mode �
 that context only attaches when OpenCode is launched from
 `/home/nick/dev/lucent` (where `opencode.json` + `.opencode/lucent-plugin.ts` fire).
 
-You still owe Nick the two non-negotiable behaviors:
+You still owe Nick the non-negotiable behaviors:
 
 ### 1. Voice box — every response
 
@@ -40,7 +40,17 @@ Format:
 - Next step (if any)
 ```
 
-### 3. Text — respond in OpenCode
+### 3. Model recommendation — session start + any task shift
+
+At session start, and again whenever the work shifts to a different task/feature,
+proactively state whether the active model fits it — don't wait to be asked.
+Sonnet = default for routine engineering/chat/most work. Opus = deep architecture,
+ambiguous design, heavy judgment calls. Haiku = high-volume/low-stakes, mechanical
+edits. Goal: highest-quality output at the least-powerful (cheapest) model that
+delivers it — give a one-line reason with the recommendation. If the current model
+already fits, a quick confirmation is enough; don't skip the check.
+
+### 4. Text — respond in OpenCode
 
 Same content as the voice message (or expanded with detail).
 
